@@ -1,0 +1,265 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "Gautam"
+date: "Tuesday, March 29, 2016"
+output: html_document
+---
+
+##**Background**
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self-movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <http://groupware.les.inf.puc-rio.br/har> (see the section on the Weight Lifting Exercise Dataset).
+
+##**Data**
+
+The training data for this project are available here:
+
+<https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv>
+
+The test data are available here:
+
+<https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv>
+
+##**Modeling Approach**
+
+This document explains the process of choosing the best model for classifying the test set candidates, based on the model devised and tested on the training dataset. The final model chosen is a Random Forest approach. Other approaches tried include a Gradient Boost model and a combined model.
+Also, the top five import variables are identified, and misclassified datapoints are examined. 
+
+###**Summary of Model selection and Prediction Approach**
+
+
+•	_**Step 1**_. Loading the essential packages and the train/test datasets  
+•	_**Step 2**_. Preprocessing the data: By removing null and other inconsistent fields (NA, #DIV/0, etc.). Also removed irrelevant fields.  
+•	_**Step 3**_. Checking the dimensions of the training and testing sets to make sure the sets are consistent  
+•	_**Step 4**_. Setting up a seed for reproducibility  
+•	_**Step 5**_. Preparing for Cross Validation by subsampling the training dataset  
+•	_**Step 6**_. First Model – A Random Forest model is built on the sub-training dataset; Accuracy : 99.64%  
+•	_**Step 7**_. Second Model – A Gradient boosting model is built on the sub-training dataset; Accuracy : 96.48%  
+•	_**Step 8**_. A third model- A stacked model by stacking the RF and GB model through another RF model. Accuracy: 99.64%  
+•	_**Step 9**_. Since the accuracy of the combined model is same as the first model, and to reduce the computational complexity,  
+  the first RF model was chosen as   the final model  
+•	_**Step 10**_. The RF model is tested on the sub-testing dataset; yielded very highly accurate results  
+•	_**Step 11**_. Understanding Variable importance: Choosing and plotting the top 5 important variables  
+•	_**Step 12**_. Plotting and understanding the misclassified data points  
+•	_**Step 13**_. Predicting the final test set; accurately classified the 20 data points.  
+
+Each of the above steps are explained in detail below.
+
+
+####**1.	Loading the essential packages:**
+
+For the purpose of modelling the following packages were loaded:
+
+```{r eval=TRUE, results='hold', echo=TRUE }
+
+#1. Load libraries
+library(caret)
+library(ggplot2)
+library(lattice)
+library(kernlab)
+library(randomForest)
+```
+
+
+####**2.	Preprocessing the data:**
+
+First the data files are loaded into _‘training_data’_ and _‘testing_data’._
+
+```{r eval=TRUE, echo=TRUE}
+#2.1. Load data
+#Setting working directory to the local
+setwd('C:/Users/gautam.krishna/Documents/GitHub/Project')
+training_data=read.csv("pml-training.csv",na.strings=c("NA","#DIV/0!", ""))
+testing_data=read.csv("pml-testing.csv",na.strings=c("NA","#DIV/0!", ""))
+
+```
+
+Preprocessing the data includes steps like removing the ‘NA’ fields, ‘#DIV/0’ and null fields. Also, fields irrelevant to the analysis are also removed. This would reduce the computational time for the model building process.
+
+```{r eval=TRUE, results='hide',  echo=TRUE}
+
+#2.2. Pre-process and clean the data
+#Removing irrelevant fields and null fields
+#A. Removing fields with all NA values:
+
+training_data=training_data[,colSums(is.na(training_data)) == 0]
+testing_data =testing_data[,colSums(is.na(testing_data)) == 0]
+
+#B. Removing the first field, since it is just index
+training_data$X = NULL
+testing_data$problem_id = NULL
+
+#C. Removing fields irrelevant to our analysis: user_name, raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp,new_window and num_window
+training_data   = training_data[,-c(1:6)]
+testing_data = testing_data[,-c(1:6)]
+```
+
+
+####**3. Checking and confirming the dimensions:**
+
+The testing and training datasets, after preprocessing, are checked to ensure the dimensions and constancy.  
+
+```{r eval=TRUE, echo=TRUE}
+#Checking the dimensions of train and test sets, to confirm the number of predictors and observations; 
+dim(training_data)
+dim(testing_data)
+
+```
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#Checking the fields of train and test sets;
+head(training_data)
+head(testing_data)
+```
+
+
+####**4. Setting a seed for reproducibility:**
+For the purpose of reproducibility, a random seed is set.
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+set.seed(9790)
+```
+
+
+####**5.	Preparing for Cross-Validation, by subsampling the training set:**
+
+Before testing the trained model on the testing model, a model is first tested on a subsample of the training set. This is to ensure that the model doesn’t train itself to the noises in the testing set first, removing the room for model improvement. This also accounts for not overfitting the model on the test set. 
+
+For the purpose of subsampling, **80%** of the training data is sub-sampled (without replacement) to 'sub_training_data' and the remaining **20%** to 'sub_testing_data'. They are again checked for constancy. 
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#5.1 Subsampling Training dataset into Subtraining set (80% of training set) and Subtesting set (20% of training set), without replacement
+
+#5.2 Accounts for cross-validation; After determining the most accurate prediction, the test set would be predicted. 
+subsamples = createDataPartition(y=training_data$classe, p=0.8, list=FALSE)
+sub_training_data = training_data[subsamples, ] 
+sub_testing_data = training_data[-subsamples, ]
+
+#5.3 Checking the dimensions of sub_train and sub_test sets
+dim(sub_training_data)
+dim(sub_testing_data)
+```
+
+
+####**6.	Model 1: Random Forest model:**
+
+As a first step, a random forest model was built on the sub_training_data with 53 features included. The model was used to predict the sub_testing_data . Accuracy of the model was found to be more than 99%.
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#6.1 Model1: A random forest model
+mod_rf = train(classe  ~ ., data = sub_training_data, method = "rf")
+pred_rf = predict(mod_rf, sub_testing_data)
+```
+
+Accuracy:
+```{r eval=TRUE, echo=TRUE}
+#6.2 Accuracy using RF Model
+confusionMatrix(pred_rf, sub_testing_data$classe)$overall[1]
+```
+
+
+####**7.  Model 2: Gradient Boost model :**
+
+To explore the scope of the improvement from the exhaustive RF model, a gradient boost algorithm was tried and tested on the sub_testing_data. However, the model failed to outperform the RF model, yielding an accuracy of around 96%.
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#7.1 Model2: A boosted trees model (Gradient boosting approach)
+mod_gbm = train(classe  ~ ., data = sub_training_data, method = "gbm")
+pred_gbm = predict(mod_gbm, sub_testing_data)
+```
+
+Accuracy:
+```{r eval=TRUE, echo=TRUE}
+#7.2 Accuracy using GB Model: 0.9648228
+confusionMatrix(pred_gbm, sub_testing_data$classe)$overall[1]
+```
+
+
+####**8.  Model 3: Combined Model  through RF :**
+
+The combined model, stacking the RF model and GB model, through another RF model was built. The predictions from the above two models were combined to create a new dataset for this purpose. However, on testing, the model did not give any better results than the initial RF model. 
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#8.1 From the above two models, RF model out performs GB model. However, a third approach of stacking the two models using a RF model is carried out next.
+Combined_DF=data.frame(pred_rf,pred_gbm,classe=sub_testing_data$classe)
+Combined_Model=train(classe~.,method="rf",data=Combined_DF)
+Combined_Prediction=predict(Combined_Model,Combined_DF)
+```
+
+Accuracy:
+```{r eval=TRUE, echo=TRUE}
+# 8.2 Accuracy of the combined model is very close to the RF model. Thus proceeding with the RF tree as the chosen model. 
+confusionMatrix(Combined_Prediction, sub_testing_data$classe)$overall[1]
+```
+
+
+####**9.  Choosing the final model:**
+
+Thus, the initial Random Forest model was chosen as the best model to predict. The combined model was discarded since it would increase the computational complexity for meeting the same accuracy levels as the RF model. Testing the model on the sub_testing_data took care of the Cross Validation process.
+
+
+####**10.  Testing on sub_testing_data: Yeilds higly accurate results:**
+
+The RF model, while testing on the sub_testing_data yielded very accurate results. A very few data points were misclassified. 
+
+```{r eval=TRUE, echo=TRUE}
+#10.1 Confustion matrix for the RF Model(chosen RF Model). The classes are almost accurately predicted.
+	table(pred_rf,sub_testing_data$classe)
+```
+
+
+####**11.	Understanding the variable importance:**
+
+In-order to understand the most important variables, the variable importance was calculated and plotted. The top 2 deciding variables were: roll_belt and yaw_belt. 
+
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#11.1 Understanding variable importace
+Variable_Importance=varImp(mod_rf,scale=FALSE)
+```
+
+```{r eval=TRUE, echo=TRUE}
+#11.2 Selecting the Top 5 important variables
+dotPlot(Variable_Importance, top = 5,main=" Top 5 high-impact variables for the RF model")
+```
+
+The top two import variables were found to be: roll_belt and yaw_belt
+
+
+####**12.	Understanding and plotting the misclassified data points:**
+
+The misclassified data points were plotted against the top two variables, to understand the reason for them being misclassified. The points were almost near the borders of the classes, and hence incorrectly misclassified. 
+```{r eval=TRUE, echo=TRUE, results='hide'}
+#12.1 Getting the right predictions
+sub_testing_data$predRight <- pred_rf==sub_testing_data$classe
+```
+
+```{r eval=TRUE, echo=TRUE}
+#12.2 Identifying actual data points(classes) with respect to the above two features:
+#Actual distribution of the classes
+qplot(roll_belt,yaw_belt,colour=classe,data=sub_testing_data,main="")
+```
+
+The different classes have been represented by different colors. However, inorder to identify the misclassified points, the confusion matrix is plotted against the two top features. 
+
+Misclassified points:
+
+```{r eval=TRUE, echo=TRUE}
+#12.3 Identifying the mis-classified data points with respect to the above two features:
+#Misclassified data-points
+qplot(roll_belt,yaw_belt,colour=predRight,data=sub_testing_data,main="Sub-Testing Predictions")
+#Datapoints near the borders being misclassified
+```
+
+Hence, it is the data points near the boundaries of the classes, that have been mis classified. But more than 99% of the data points have been classified accurately.
+
+
+####**13.	Predicting the test data set:**
+
+The cross-validated, final random forest model is now applied on the test dataset to yield the final predictions. The model could classify the test set into the right classes.  
+
+```{r eval=TRUE, echo=TRUE}
+#13.1 Predicting the final test set
+Final_Predict=predict(mod_rf,testing_data)
+Final_Predict
+```
+
+
