@@ -221,6 +221,8 @@ Variable_Importance=varImp(mod_rf,scale=FALSE)
 dotPlot(Variable_Importance, top = 5,main=" Top 5 high-impact variables for the RF model")
 ```
 
+![alt text](https://raw.githubusercontent.com/gkrishna9790/gkrishna9790.github.io/Machine_Learning_GK/Images/Var_Imp.jpeg)
+
 The top two import variables were found to be: roll_belt and yaw_belt
 
 
@@ -238,6 +240,8 @@ sub_testing_data$predRight <- pred_rf==sub_testing_data$classe
 qplot(roll_belt,yaw_belt,colour=classe,data=sub_testing_data,main="")
 ```
 
+![alt text](https://raw.githubusercontent.com/gkrishna9790/gkrishna9790.github.io/Machine_Learning_GK/Images/Actual_Classes.jpeg)
+
 The different classes have been represented by different colors. However, inorder to identify the misclassified points, the confusion matrix is plotted against the two top features. 
 
 Misclassified points:
@@ -248,6 +252,7 @@ Misclassified points:
 qplot(roll_belt,yaw_belt,colour=predRight,data=sub_testing_data,main="Sub-Testing Predictions")
 #Datapoints near the borders being misclassified
 ```
+![alt text](https://raw.githubusercontent.com/gkrishna9790/gkrishna9790.github.io/Machine_Learning_GK/Images/Misclassification.jpeg)
 
 Hence, it is the data points near the boundaries of the classes, that have been mis classified. But more than 99% of the data points have been classified accurately.
 
