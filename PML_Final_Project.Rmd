@@ -160,6 +160,22 @@ confusionMatrix(pred_rf, sub_testing_data$classe)$overall[1]
 ## 0.9923528
 ```
 
+Out-of-sample Error:
+
+The out of sample error is calculated as: (Misclassifed Outcomes)/(Total number of outcomes)
+
+```{r eval=TRUE, echo=TRUE}
+#6.3 Classification error
+number_of_matching_values = pred_rf==sub_testing_data$classe
+Predction_Error= 1 - sum(number_of_matching_values)/length(pred_rf)
+Predction_Error
+```
+```{r eval=TRUE, echo=TRUE}
+##[1] 0.003568697
+```
+
+The out of sample error was found out to be 0.3%, which is very small. So the model performs a very good job in classifying.
+
 ####**7.  Model 2: Gradient Boost model :**
 
 To explore the scope of the improvement from the exhaustive RF model, a gradient boost algorithm was tried and tested on the sub_testing_data. However, the model failed to outperform the RF model, yielding an accuracy of 96.35%%.
@@ -179,6 +195,22 @@ confusionMatrix(pred_gbm, sub_testing_data$classe)$overall[1]
 ##  Accuracy 
 ## 0.9635483
 ```
+
+Out-of-sample Error:
+
+The out of sample error is calculated as: (Misclassifed Outcomes)/(Total number of outcomes)
+
+```{r eval=TRUE, echo=TRUE}
+#7.3 Classification error
+number_of_matching_values_gbm = pred_gbm==sub_testing_data$classe
+Predction_Error= 1 - sum(number_of_matching_values_gbm)/length(pred_rf)
+Predction_Error
+```
+```{r eval=TRUE, echo=TRUE}
+##[1] 0.03517716
+```
+
+The out of sample error was found out to be 3.5%, which is very high compared to the RF model. It still does a decent job in classification.
 
 ####**8.  Model 3: Combined Model  through RF :**
 
@@ -201,10 +233,11 @@ confusionMatrix(Combined_Prediction, sub_testing_data$classe)$overall[1]
 ## 0.9923528
 ```
 
+Since the accuracy of the combined model is same as that of the RF model, the out of sample error of the combined model would be same as that of the RF model. So, that is not estiamted here, but it would be 0.3%.
 
 ####**9.  Choosing the final model:**
 
-Thus, the initial Random Forest model was chosen as the best model to predict. The combined model was discarded since it would increase the computational complexity for meeting the same accuracy levels as the RF model. Testing the model on the sub_testing_data took care of the Cross Validation process.
+Thus, the initial Random Forest model was chosen as the best model to predict. The RF model has the highest accuracy and the lowest out of sample error. The combined model was discarded since it would increase the computational complexity for meeting the same accuracy levels as the RF model. Testing the model on the sub_testing_data took care of the Cross Validation process.
 
 
 ####**10.  Testing on sub_testing_data: Yeilds higly accurate results:**

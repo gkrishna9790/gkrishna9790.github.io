@@ -212,6 +212,19 @@ confusionMatrix(pred_rf, sub_testing_data$classe)$overall[1]</code></pre>
 <pre><code>##  Accuracy 
 ## 0.9923528</code></pre>
 </div>
+
+<p>Out-of-sample Error:</p>
+<p>The out of sample error is calculated as: (Misclassifed Outcomes)/(Total number of outcomes)</p>
+<pre class="r"><code>#6.3 Classification error
+number_of_matching_values = pred_rf==sub_testing_data$classe
+Predction_Error= 1 - sum(number_of_matching_values)/length(pred_rf)
+Predction_Error</code></pre>
+<pre class="r"><code>##[1] 0.003568697</code></pre>
+<p>The out of sample error was found out to be 0.3%, which is very small. So the model performs a very good job in classifying.</p>
+
+
+
+
 <div id="model-2-gradient-boost-model" class="section level4">
 <h4><strong>7. Model 2: Gradient Boost model :</strong></h4>
 <p>To explore the scope of the improvement from the exhaustive RF model, a gradient boost algorithm was tried and tested on the sub_testing_data. However, the model failed to outperform the RF model, yielding an accuracy of 96.33%.</p>
@@ -224,6 +237,14 @@ confusionMatrix(pred_gbm, sub_testing_data$classe)$overall[1]</code></pre>
 <pre><code>##  Accuracy 
 ## 0.9635483</code></pre>
 </div>
+<p>Out-of-sample Error:</p>
+<p>The out of sample error is calculated as: (Misclassifed Outcomes)/(Total number of outcomes)</p>
+<pre class="r"><code>#7.3 Classification error
+#number_of_matching_values_gbm = pred_gbm==sub_testing_data$classe
+#Predction_Error= 1 - sum(number_of_matching_values_gbm)/length(pred_rf)
+#Predction_Error</code></pre>
+<pre class="r"><code>##[1] 0.03517716</code></pre>
+<p>The out of sample error was found out to be 3.5%, which is very high compared to the RF model. It still does a decent job in classification.</p>
 <div id="model-3-combined-model-through-rf" class="section level4">
 <h4><strong>8. Model 3: Combined Model through RF :</strong></h4>
 <p>The combined model, stacking the RF model and GB model, through another RF model was built. The predictions from the above two models were combined to create a new dataset for this purpose. However, on testing, the model did not give any better results than the initial RF model.</p>
@@ -236,10 +257,11 @@ Combined_Prediction=predict(Combined_Model,Combined_DF)</code></pre>
 confusionMatrix(Combined_Prediction, sub_testing_data$classe)$overall[1]</code></pre>
 <pre><code>##  Accuracy 
 ## 0.9923528</code></pre>
+<p>Since the accuracy of the combined model is same as that of the RF model, the out of sample error of the combined model would be same as that of the RF model. So, that is not estiamted here, but it would be 0.3%.</p>
 </div>
 <div id="choosing-the-final-model" class="section level4">
 <h4><strong>9. Choosing the final model:</strong></h4>
-<p>Thus, the initial Random Forest model was chosen as the best model to predict. The combined model was discarded since it would increase the computational complexity for meeting the same accuracy levels as the RF model. Testing the model on the sub_testing_data took care of the Cross Validation process.</p>
+<p>Thus, the initial Random Forest model was chosen as the best model to predict. The RF model has the highest accuracy and the lowest out of sample error. The combined model was discarded since it would increase the computational complexity for meeting the same accuracy levels as the RF model. Testing the model on the sub_testing_data took care of the Cross Validation process.</p>
 </div>
 <div id="testing-on-sub_testing_data-yeilds-higly-accurate-results" class="section level4">
 <h4><strong>10. Testing on sub_testing_data: Yeilds higly accurate results:</strong></h4>
