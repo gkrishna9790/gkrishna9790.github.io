@@ -258,7 +258,7 @@ sub_testing_data$predRight <- pred_rf==sub_testing_data$classe
 ```{r eval=TRUE, echo=TRUE}
 #12.2 Identifying actual data points(classes) with respect to the above two features:
 #Actual distribution of the classes
-qplot(roll_belt,yaw_belt,colour=classe,data=sub_testing_data,main="")
+qplot(roll_belt,yaw_belt,colour=classe,data=sub_testing_data,main="Actual classes")
 ```
 
 ![alt text](https://raw.githubusercontent.com/gkrishna9790/gkrishna9790.github.io/Machine_Learning_GK/Images/Actual_Classes.jpeg)
