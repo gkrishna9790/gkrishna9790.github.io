@@ -240,9 +240,9 @@ confusionMatrix(pred_gbm, sub_testing_data$classe)$overall[1]</code></pre>
 <p>Out-of-sample Error:</p>
 <p>The out of sample error is calculated as: (Misclassifed Outcomes)/(Total number of outcomes)</p>
 <pre class="r"><code>#7.3 Classification error
-#number_of_matching_values_gbm = pred_gbm==sub_testing_data$classe
-#Predction_Error= 1 - sum(number_of_matching_values_gbm)/length(pred_rf)
-#Predction_Error</code></pre>
+number_of_matching_values_gbm = pred_gbm==sub_testing_data$classe
+Predction_Error= 1 - sum(number_of_matching_values_gbm)/length(pred_rf)
+Predction_Error</code></pre>
 <pre class="r"><code>##[1] 0.03517716</code></pre>
 <p>The out of sample error was found out to be 3.5%, which is very high compared to the RF model. It still does a decent job in classification.</p>
 <div id="model-3-combined-model-through-rf" class="section level4">
