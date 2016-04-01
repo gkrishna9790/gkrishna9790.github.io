@@ -214,7 +214,7 @@ confusionMatrix(pred_rf, sub_testing_data$classe)$overall[1]</code></pre>
 </div>
 <div id="model-2-gradient-boost-model" class="section level4">
 <h4><strong>7. Model 2: Gradient Boost model :</strong></h4>
-<p>To explore the scope of the improvement from the exhaustive RF model, a gradient boost algorithm was tried and tested on the sub_testing_data. However, the model failed to outperform the RF model, yielding an accuracy of 96.48%.</p>
+<p>To explore the scope of the improvement from the exhaustive RF model, a gradient boost algorithm was tried and tested on the sub_testing_data. However, the model failed to outperform the RF model, yielding an accuracy of 96.33%.</p>
 <pre class="r"><code>#7.1 Model2: A boosted trees model (Gradient boosting approach)
 mod_gbm = train(classe  ~ ., data = sub_training_data, method = &quot;gbm&quot;)
 pred_gbm = predict(mod_gbm, sub_testing_data)</code></pre>
